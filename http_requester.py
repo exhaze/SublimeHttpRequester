@@ -354,25 +354,38 @@ class HttpRequesterRefreshCommand(sublime_plugin.TextCommand):
 class ResultsPresenter():
 
     def __init__(self):
+        
+        self.view = self.findView()
         pass
+    
+    def findView(self):
+        for window in sublime.windows():
+            for view in window.views():
+                if view.name() == "http response":
+                    return view
+
+        return None
 
     def createWindowWithText(self, textToDisplay, fileType):
-        newView = sublime.active_window().new_file()
-        edit = newView.begin_edit()
-        newView.insert(edit, 0, textToDisplay)
-        newView.end_edit(edit)
-        newView.set_scratch(True)
-        newView.set_read_only(False)
-        newView.set_name("http response")
+        if self.view is None:
+            self.view = sublime.active_window().new_file()
+
+        edit = self.view.begin_edit()
+        self.view.insert(edit, 0, "\n\n\n")
+        self.view.insert(edit, 0, textToDisplay)
+        self.view.end_edit(edit)
+        self.view.set_scratch(True)
+        self.view.set_read_only(False)
+        self.view.set_name("http response")
 
         if fileType == HttpRequester.FILE_TYPE_HTML:
-            newView.set_syntax_file("Packages/HTML/HTML.tmLanguage")
+            self.view.set_syntax_file("Packages/HTML/HTML.tmLanguage")
         if fileType == HttpRequester.FILE_TYPE_JSON:
-            newView.set_syntax_file("Packages/JavaScript/JSON.tmLanguage")
+            self.view.set_syntax_file("Packages/JavaScript/JSON.tmLanguage")
         if fileType == HttpRequester.FILE_TYPE_XML:
-            newView.set_syntax_file("Packages/XML/XML.tmLanguage")
+            self.view.set_syntax_file("Packages/XML/XML.tmLanguage")
 
-        return newView.id()
+        return self.view.id()
 
 
 class HttpRequesterCommand(sublime_plugin.TextCommand):
